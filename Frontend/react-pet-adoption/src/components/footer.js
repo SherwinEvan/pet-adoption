@@ -2,11 +2,11 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { mainIcon } from "../data/logo";
 import { socialsIcon } from "../data/socials";
-import { navLinks } from "../data/navlinks";
+import { footerLinks } from "../data/navlinks";
 
 export default function Footer() {
   return (
-    <footer className="shadow-inner">
+    <footer className="shadow-inner w-full bg-white">
       <div className="md:flex md:justify-between items-center md:px-10 px-4 md:pt-0 pt-8">
         <div className="flex-col items-center md:mx-8 md:mb-0 mb-10">
           {mainIcon.map((main) => (
@@ -25,13 +25,13 @@ export default function Footer() {
               </span>
             </Link>
           ))}
-          <div className="mt-4 md:mt-5">PLACEHOLDER</div>
+          <div className="mt-4 md:mt-2">Where Paws and Hearts Unite.</div>
         </div>
 
         <div className="md:flex flex-col md:mb-0 mb-5">
           <ul className="md:mx-8 my-6">
-            <span className="font-semibold">Solutions</span>
-            {navLinks.map((link) => (
+            <span className="font-semibold">Links</span>
+            {footerLinks.map((link) => (
               <li key={link.name} className="md:mb-0 my-6">
                 <Link
                   to={link.link}
