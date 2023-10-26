@@ -1,5 +1,5 @@
-import colorsIcon from "../assets/ColorsIcon.png";
+import petHouse from "../assets/pet-house.png";
 
 export const mainIcon = [
-  { name: "Placeholder", alt: "colorsIcon", icon: colorsIcon, link: "/" },
+  { name: "PetAdopt", alt: "PetAdopt", icon: petHouse, link: "/" },
 ];

@@ -18,16 +18,17 @@ import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { useForm } from "react-hook-form";
-import DeleteSessionCookie from "../../service/deleteSessionCookie";
 import loginBG from "../../assets/loginBG.jpg";
 import NavBar from "../../components/navbar";
 import Footer from "../../components/footer";
-import { saveRememberMePreference } from "../../service/rememberMe.js";
+import { useDispatch } from "react-redux";
+import { login } from "../../redux/UserSlice";
+import LogDOG from "../../assets/LogDOG.jpg";
 
 const theme = createTheme();
 
 export default function Login() {
-  React.useEffect(DeleteSessionCookie);
+  const dispatch = useDispatch();
 
   const { handleSubmit, register } = useForm();
 
@@ -41,10 +42,10 @@ export default function Login() {
     console.log(data);
 
     if (
-      !/^[a-zA-Z][a-zA-Z0-9_]{3,15}$/.test(data.userName) ||
-      !/^(?=.*[A-Z])(?=.*[a-z])(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?])(?=.*\d).{8,127}$/.test(
-        data.password
-      )
+      !/^[a-zA-Z][a-zA-Z0-9_]{3,15}$/.test(data.userName) //||
+      //!/^(?=.*[A-Z])(?=.*[a-z])(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?])(?=.*\d).{8,127}$/.test(
+      //data.password
+      //)
     ) {
       toast.error(<div>Invalid Username/Password!</div>, {
         position: "top-center",
@@ -58,7 +59,8 @@ export default function Login() {
       });
     } else {
       try {
-        const response = await axios.post("login/", data);
+        console.log(data);
+        const response = await axios.post("/public/login", data);
         await toast.promise(Promise.resolve(response), {
           pending: "Authenticating...",
           success: "Login successful!",
@@ -74,26 +76,40 @@ export default function Login() {
         });
 
         if (response.status === 200) {
-          saveRememberMePreference(data.remember);
-          setTimeout(() => (window.location = "/"), 3000);
+          dispatch(login(data.username));
+          localStorage.setItem("authToken", response.data.token);
+
+          const token = response.data;
+
+          axios
+            .post("public/getrole", token)
+            .then((roleResponse) => {
+              const role = roleResponse.data;
+              localStorage.setItem("userRole", role);
+              if (role === "USER") {
+                window.location = "/";
+              } else if (role === "ADMIN") {
+                window.location = "/dashboard";
+              } else if (role === "PET_OWNER") {
+                window.location = "/";
+              }
+            })
+            .catch((error) => {
+              console.error("Error fetching role:", error);
+            });
         }
       } catch (error) {
         console.log(error);
-        toast.error(
-          <div>
-            Server error! <br /> Please try again later.
-          </div>,
-          {
-            position: "top-center",
-            autoClose: 3000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            progress: undefined,
-            theme: "light",
-          }
-        );
+        toast.error(<div>Invalid Username/Password!</div>, {
+          position: "top-center",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "light",
+        });
       }
     }
   };
@@ -110,7 +126,7 @@ export default function Login() {
             sm={4}
             md={7}
             sx={{
-              backgroundImage: `url(${loginBG})`,
+              backgroundImage: `url(${LogDOG})`,
               backgroundRepeat: "no-repeat",
               backgroundColor: (t) =>
                 t.palette.mode === "light"
@@ -154,11 +170,11 @@ export default function Login() {
                   margin="normal"
                   required
                   fullWidth
-                  id="userName"
+                  id="username"
                   label="Username"
-                  name="userName"
-                  autoComplete="userName"
-                  {...register("userName")}
+                  name="username"
+                  autoComplete="username"
+                  {...register("username")}
                   autoFocus
                 />
                 <TextField

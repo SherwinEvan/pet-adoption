@@ -1,15 +1,18 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import Button from "@mui/material/Button";
 import { navLinks } from "../data/navlinks";
+import { useSelector } from "react-redux";
+import { selectUser } from "../redux/UserSlice";
 import GetUser from "../service/getUser";
+import { logout } from "../redux/UserSlice";
+import { useDispatch } from "react-redux";
 import { mainIcon } from "../data/logo";
 import BurgerMenu from "../assets/BurgerMenu.png";
 import BurgerMenuClose from "../assets/BurgerMenuClose.png";
-import DeleteSessionCookie from "../service/deleteSessionCookie";
+import useTheme from "../service/useTheme";
 
 function handleLogout() {
-  DeleteSessionCookie();
   window.location.reload(false);
 }
 
@@ -17,16 +20,32 @@ export default function NavBar() {
   const [currUser, setCurrUser] = useState(null);
   const [burgerOpen, setBurgerOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const location = useLocation();
 
-  useEffect(() => {
-    const fetchData = async () => {
-      const user = await GetUser();
-      setCurrUser(user);
-      setIsLoading(false);
-    };
+  const user = useSelector(selectUser);
+  const userName =
+    user.user && user.user.userName ? user.user.userName : "Guest";
 
-    fetchData();
-  }, []);
+  const dispatch = useDispatch();
+  const [theme, toggleTheme] = useTheme();
+
+  const handleLogout = () => {
+    dispatch(logout());
+    localStorage.clear();
+    window.location.href = "/";
+  };
+
+  const isLinkActive = (to) => {
+    return location.pathname === to;
+  };
+
+  const displayTextOnHover = () => {
+    if (userName === "Guest") {
+      return "Login";
+    } else {
+      return "Logout";
+    }
+  };
 
   return (
     <nav className="shadow-md w-full relative">
@@ -76,66 +95,33 @@ export default function NavBar() {
             <li key={link.name} className="md:mx-8 md:my-0 my-8">
               <Link
                 to={link.link}
-                className="md:text-gray-800 text-neutral-200  hover:text-gray-400 duration-500"
+                className={`md:text-gray-800 text-neutral-200  hover:text-gray-400 duration-500 ${
+                  isLinkActive(link.link) ? "underline" : ""
+                }`}
               >
                 {link.name}
               </Link>
             </li>
           ))}
-          {!isLoading ? (
-            <li>
-              <div className="md:hidden">
-                {currUser === "Guest" || currUser === "Error" ? (
-                  <Button fullWidth variant="contained">
-                    <Link to="/login">Sign In</Link>
-                  </Button>
-                ) : (
-                  <div className="relative">
-                    <p className="group">
-                      <span className="opacity-100 group-hover:opacity-0 transition-opacity">
-                        Hello {currUser}
-                      </span>
-                      <span
-                        className="absolute left-0 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
-                        onClick={handleLogout}
-                      >
-                        Logout
-                      </span>
-                    </p>
-                  </div>
-                )}
-              </div>
-            </li>
-          ) : (
-            <li className="md:hidden">Syncing...</li>
-          )}
         </ul>
-        {!isLoading && (
-          <div className="hidden md:block">
-            {currUser === "Guest" || currUser === "Error" ? (
-              <Button fullWidth variant="contained">
-                <Link to="/login">Sign In</Link>
-              </Button>
-            ) : (
-              <div className="relative">
-                <p className="group">
-                  <span className="mr-5">
-                    <a href="/account">Hello {currUser}</a>
-                  </span>
-                  <span span className="">
-                    <Button
-                      className=""
-                      variant="outlined"
-                      onClick={handleLogout}
-                    >
-                      Logout
-                    </Button>
-                  </span>
-                </p>
-              </div>
-            )}
-          </div>
-        )}
+        <div className="relative group flex justify-center">
+          <div className={`group-hover:opacity-0 `}>Welcome, {userName}</div>
+          {userName === "Guest" ? (
+            <Link
+              to="/login"
+              className={`absolute opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer visible`}
+            >
+              {displayTextOnHover()}
+            </Link>
+          ) : (
+            <button
+              onClick={handleLogout}
+              className={`absolute opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer visible`}
+            >
+              {displayTextOnHover()}
+            </button>
+          )}
+        </div>
       </div>
     </nav>
   );

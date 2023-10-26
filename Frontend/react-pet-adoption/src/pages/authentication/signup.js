@@ -14,12 +14,13 @@ import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import axios from "axios";
 import * as React from "react";
-import DeleteSessionCookie from "../../service/deleteSessionCookie";
-import { toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 import { useForm, Controller } from "react-hook-form";
 import NavBar from "../../components/navbar";
 import Footer from "../../components/footer";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { Input } from "antd";
+import MenuItem from "@mui/material/MenuItem";
 
 const theme = createTheme();
 
@@ -28,15 +29,18 @@ export default function SignUp() {
     control,
     handleSubmit,
     formState: { errors },
-    getValues,
   } = useForm();
 
-  React.useEffect(DeleteSessionCookie);
-
   const [showPassword, setShowPassword] = React.useState(false);
+  const [userType, setUserType] = React.useState("User");
+
 
   const handleTogglePassword = () => {
     setShowPassword(!showPassword);
+  };
+
+  const handleUserTypeChange = (event) => {
+    setUserType(event.target.value);
   };
 
   const validatePassword = (value) => {
@@ -67,8 +71,11 @@ export default function SignUp() {
   const onSubmit = (data) => {
     console.log(data);
 
+    const endpoint = userType === "User" ? "/public/register/user" : "/public/register/petowner";
+
+    // Make a post request with the data
     axios
-      .post("auth/signup", data)
+      .post(endpoint, data)
       .then((res) => {
         if (res.status === 200) {
           toast.success(
@@ -140,52 +147,23 @@ export default function SignUp() {
               >
                 <Grid container spacing={2}>
                   <Grid item xs={12}>
-                    <Controller
-                      name="email"
-                      control={control}
-                      rules={{
-                        required: "Email is required.",
-                        pattern: {
-                          value:
-                            //RFC2822 Email  regex
-                            /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/,
-                          message: "Enter a valid email address.",
-                        },
-                      }}
-                      render={({ field }) => (
-                        <TextField
-                          {...field}
-                          required
-                          fullWidth
-                          autoComplete="email"
-                          name="email"
-                          id="email"
-                          label="Email Address"
-                          error={!!errors.email}
-                          helperText={errors.email?.message}
-                        />
-                      )}
-                    />
+                    <TextField
+                      select
+                      label="User Type"
+                      fullWidth
+                      value={userType}
+                      onChange={handleUserTypeChange}
+                    >
+                      <MenuItem value="User">User</MenuItem>
+                      <MenuItem value="Pet Owner">Pet Owner</MenuItem>
+                    </TextField>
                   </Grid>
                   <Grid item xs={12}>
                     <Controller
-                      name="userName"
+                      name="username"
                       control={control}
                       rules={{
                         required: "Username is required.",
-                        pattern: {
-                          value: /^[a-zA-Z][a-zA-Z0-9_]{3,15}$/,
-                          message:
-                            "Enter a valid Username (Alphanumeric and _ character(s) are allowed).",
-                        },
-                        minLength: {
-                          value: 4,
-                          message: "Username must be at least 4 characters.",
-                        },
-                        maxLength: {
-                          value: 16,
-                          message: "Username can be at atmost 16 characters.",
-                        },
                       }}
                       render={({ field }) => (
                         <TextField
@@ -193,11 +171,11 @@ export default function SignUp() {
                           required
                           fullWidth
                           autoComplete="given-name"
-                          name="userName"
-                          id="userName"
-                          label="Userame"
-                          error={!!errors.userName}
-                          helperText={errors.userName?.message}
+                          name="username"
+                          id="username"
+                          label="Username"
+                          error={!!errors.username}
+                          helperText={errors.username?.message}
                         />
                       )}
                     />
@@ -247,33 +225,122 @@ export default function SignUp() {
                   </Grid>
                   <Grid item xs={12}>
                     <Controller
-                      name="confirmPassword"
+                      name="fullname"
                       control={control}
                       rules={{
-                        required: "Confirm Password is required.",
-                        validate: {
-                          matchesPassword: (value) =>
-                            value === getValues().password ||
-                            "Passwords do not match.",
+                        required: "Full Name is required.",
+                      }}
+                      render={({ field }) => (
+                        <TextField
+                          {...field}
+                          required
+                          fullWidth
+                          autoComplete="given-name"
+                          name="fullname"
+                          id="fullname"
+                          label="Full Name"
+                          error={!!errors.fullname}
+                          helperText={errors.fullname?.message}
+                        />
+                      )}
+                    />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Controller
+                      name="email"
+                      control={control}
+                      rules={{
+                        required: "Email is required.",
+                        pattern: {
+                          value:
+                            // RFC2822 Email regex
+                            /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=/^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/,
+                          message: "Enter a valid email address.",
                         },
                       }}
                       render={({ field }) => (
                         <TextField
                           {...field}
-                          margin="normal"
                           required
                           fullWidth
-                          name="confirmPassword"
-                          label="Confirm Password"
-                          id="confirmPassword"
-                          autoComplete="new-password"
-                          type="password"
-                          error={!!errors.confirmPassword}
-                          helperText={errors.confirmPassword?.message}
+                          autoComplete="email"
+                          name="email"
+                          id="email"
+                          label="Email Address"
+                          error={!!errors.email}
+                          helperText={errors.email?.message}
                         />
                       )}
                     />
                   </Grid>
+                  <Grid item xs={12}>
+                    <Controller
+                      name="phno"
+                      control={control}
+                      rules={{
+                        required: "Phone Number is required.",
+                      }}
+                      render={({ field }) => (
+                        <TextField
+                          {...field}
+                          required
+                          fullWidth
+                          autoComplete="tel"
+                          name="phno"
+                          id="phno"
+                          label="Phone Number"
+                          error={!!errors.phno}
+                          helperText={errors.phno?.message}
+                        />
+                      )}
+                    />
+                  </Grid>
+                  {userType === "Pet Owner" && (
+                    <>
+                      <Grid item xs={12}>
+                        <Controller
+                          name="ownertype"
+                          control={control}
+                          rules={{
+                            required: "Owner Type is required.",
+                          }}
+                          render={({ field }) => (
+                            <TextField
+                              {...field}
+                              select
+                              fullWidth
+                              autoComplete="off"
+                              name="ownertype"
+                              id="ownertype"
+                              label="Owner Type"
+                              error={!!errors.ownertype}
+                              helperText={errors.ownertype?.message}
+                              value={`INDIVIDUAL`}
+                            >
+                              <MenuItem value="INDIVIDUAL">Individual</MenuItem>
+                              <MenuItem value="SHELTER">Shelter</MenuItem>
+                            </TextField>
+                          )}
+                        />
+                      </Grid>
+                      <Grid item xs={12}>
+                        <Controller
+                          name="address"
+                          control={control}
+                          rules={{
+                            required: "Address is required.",
+                          }}
+                          render={({ field }) => (
+                            <Input.TextArea
+                              {...field}
+                              autoSize={{ minRows: 3, maxRows: 5 }}
+                              placeholder="Address"
+                            />
+                          )}
+                        />
+                      </Grid>
+                    </>
+                  )}
                 </Grid>
                 <Button
                   type="submit"
@@ -285,7 +352,7 @@ export default function SignUp() {
                 </Button>
                 <Grid container justifyContent="flex-end">
                   <Grid item>
-                    <Link href="/Login" variant="body2">
+                    <Link href="/login" variant="body2">
                       Already have an account? Sign in
                     </Link>
                   </Grid>
